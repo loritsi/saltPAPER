@@ -2,7 +2,7 @@ import pygame
 from pathlib import Path
 
 cwd = Path.cwd()
-default_font_path = cwd / "components" / "assets" / "LibertinusMono-Regular.ttf"
+default_font_path = cwd / "engine" / "assets" / "LibertinusMono-Regular.ttf"
 blank_char = " "
 
 class TextWindow():
@@ -45,7 +45,8 @@ class TextWindow():
             for h in range(self.textheight):
                 self.textarray[w][h] = blank_char
 
-    def write(self, text, x, y):
+    def write(self, x, y, text):
+        text = str(text)
         writelength = len(text)
 
         for i in range(writelength):
@@ -62,7 +63,7 @@ class TextWindow():
                 if char == " ":
                     continue
                 else:
-                    char_surf = self.font.render(char,antialias=True,color=(255,255,255))
+                    char_surf = self.font.render(char, True, (255,255,255))
                     self.screen.blit(char_surf,(w*self.charwidth,h*self.charheight))
 
     def tick(self):
