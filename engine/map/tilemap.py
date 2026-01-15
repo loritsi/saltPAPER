@@ -3,7 +3,7 @@ from pathlib import Path
 
 class TileType():
     def __init__(self, id, size):
-        self.surface = pygame.surface.Surface((16,16))
+        self.surface = pygame.Surface((size, size), pygame.SRCALPHA)
 
     def get_surface(self) -> pygame.surface.Surface:
         return self.surface
@@ -32,7 +32,17 @@ class TileMap():
             offsetx = (i % tilewidth) * self.size
             offsety = (i // tilewidth) * self.size
             tile.surface.blit(self.base, (0, 0), (offsetx, offsety, self.size, self.size))
-            self.tiles.append(tile)
+            
+            if not self._is_fully_transparent(tile.surface):
+                self.tiles.append(tile)
+    
+    def _is_fully_transparent(self, surface):
+        for x in range(surface.get_width()):
+            for y in range(surface.get_height()):
+                r, g, b, a = surface.get_at((x, y))
+                if a > 0:  # Found a non-transparent pixel
+                    return False
+        return True
     
     def __len__(self):
         return len(self.tiles)

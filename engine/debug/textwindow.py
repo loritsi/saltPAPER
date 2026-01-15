@@ -62,9 +62,8 @@ class TextWindow():
                 char = self.textarray[w][h]
                 if char == " ":
                     continue
-                else:
-                    char_surf = self.font.render(char, True, (255,255,255))
-                    self.screen.blit(char_surf,(w*self.charwidth,h*self.charheight))
+                char_surf = self.font.render(char, True, (255,255,255))
+                self.screen.blit(char_surf,(w*self.charwidth,h*self.charheight))
 
     def tick(self):
 

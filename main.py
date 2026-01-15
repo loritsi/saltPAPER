@@ -5,41 +5,63 @@ from pathlib import Path
 
 from engine.map.tilemap import TileMap
 from engine.services.input import EventMapper
+from engine.services.display import DisplayService
+from engine.services.layer import Layer
 
 
 cwd = Path.cwd()
 tilemap_path = cwd / "engine" / "assets" / "tilemaps" / "test.png"
 tilemap = TileMap(tilemap_path, 16)
 
-pygame.init()
+dimensions = 768,624
+FPS = 120
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60
+display = DisplayService(
+    dimensions=dimensions,
+    caption="eeeeee",
+    vsync=False
+)
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("eeeeee")
+TILE_SIZE = 48
 
-clock = pygame.time.Clock()
-screen.fill((255,255,255))
-def main():
-    running = True
+def fill_layer_with_tiles(layer, tile_size=TILE_SIZE):
+    """Fill a layer with a random tile pattern."""
+    tiles_x = (layer.dimensions[0] // tile_size) + 2 
+    tiles_y = (layer.dimensions[1] // tile_size) + 2
     
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-        
-        tile = random.choice(tilemap.tiles).get_surface()
-        tile = pygame.transform.scale(tile, (48,48))
-        screen.blit(tile, (random.randint(0,SCREEN_WIDTH-16),random.randint(0,SCREEN_WIDTH-16)))
+    for y in range(tiles_y):
+        for x in range(tiles_x):
+            tile = random.choice(tilemap.tiles).get_surface()
+            tile = pygame.transform.scale(tile, (tile_size, tile_size))
+            layer.surface.blit(tile, (x * tile_size, y * tile_size))
 
-        pygame.display.flip()
-        
-        clock.tick(FPS)
+tile_layer = Layer(
+    dimensions=dimensions,
+    render_priority=0
+)
+
+tile_layer2 = Layer(
+    dimensions=dimensions,
+    render_priority=1,
+    opacity_percent=50
+)
+
+fill_layer_with_tiles(tile_layer)
+fill_layer_with_tiles(tile_layer2)
+
+display.add_layer(tile_layer)
+display.add_layer(tile_layer2)
+event = EventMapper()
+mouse = pygame.mouse
+
+def main():
+    while display.running:
+        tile_layer.loopscroll(1, 1)
+        tile_layer2.loopscroll(-1, -1)
+
+        display.tick()
+        display.clock.tick(FPS)
+        pygame.display.set_caption(f"{display.caption} - {display.clock.get_fps():.0f}fps (limit {FPS})")
     
     pygame.quit()
     sys.exit()
