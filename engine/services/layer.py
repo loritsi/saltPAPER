@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 class Layer:
     def __init__(
@@ -25,8 +26,12 @@ class Layer:
             self.func(self)
     
     def render(self):
-        ...
-        return self.surface
+        if self.opacity_percent >= 100:
+            return self.surface
+        
+        surf = self.surface.copy()
+        surf.set_alpha(int(self.opacity_percent * 2.55))
+        return surf
     
     def loopscroll(self, dx, dy):
         surf = self.surface

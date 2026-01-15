@@ -14,7 +14,7 @@ tilemap_path = cwd / "engine" / "assets" / "tilemaps" / "test.png"
 tilemap = TileMap(tilemap_path, 16)
 
 dimensions = 768,624
-FPS = 120
+FPS = 12000
 
 display = DisplayService(
     dimensions=dimensions,
@@ -25,7 +25,6 @@ display = DisplayService(
 TILE_SIZE = 48
 
 def fill_layer_with_tiles(layer, tile_size=TILE_SIZE):
-    """Fill a layer with a random tile pattern."""
     tiles_x = (layer.dimensions[0] // tile_size) + 2 
     tiles_y = (layer.dimensions[1] // tile_size) + 2
     
@@ -37,7 +36,8 @@ def fill_layer_with_tiles(layer, tile_size=TILE_SIZE):
 
 tile_layer = Layer(
     dimensions=dimensions,
-    render_priority=0
+    render_priority=1,
+    opacity_percent=50
 )
 
 tile_layer2 = Layer(
@@ -57,7 +57,7 @@ mouse = pygame.mouse
 def main():
     while display.running:
         tile_layer.loopscroll(1, 1)
-        tile_layer2.loopscroll(-1, -1)
+        tile_layer2.loopscroll(0, -1)
 
         display.tick()
         display.clock.tick(FPS)

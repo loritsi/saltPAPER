@@ -67,15 +67,7 @@ class DisplayService():
                 continue
             surf = layer.render()
             offset = layer.offset
-            if layer.opacity_percent < 100:
-                # Create temporary surface with opacity without modifying original
-                alpha_surf = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-                alpha_surf.fill((255, 255, 255, int(layer.opacity_percent * 2.55)))
-                temp = surf.copy()
-                temp.blit(alpha_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                self.display.blit(temp, offset)
-            else:
-                self.display.blit(surf, offset)
+            self.display.blit(surf, offset)
             
         if self.func:
             self.func(self)
@@ -90,7 +82,7 @@ if __name__ == "__main__":
     cwd = Path.cwd()
     duck_image_path = cwd / "engine" / "assets" / "images" / "duck.jpg"
     duck_image = pygame.image.load(duck_image_path)
-    test_image_path = cwd / "engine" / "assets" / "images" / "test.jpg"
+    test_image_path = cwd / "engine" / "assets" / "images" / "test.png"
     dimensions = duck_image.get_size()
     display = DisplayService(dimensions, vsync=False)
     fps = 5000
