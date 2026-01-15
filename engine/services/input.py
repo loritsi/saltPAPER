@@ -5,6 +5,7 @@
 # i.e. K_up
 import sys
 from pathlib import Path
+from typing import Callable
 
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -31,15 +32,34 @@ EVENT_TYPES_LISTENING = {
     pygame.CONTROLLERBUTTONUP: "button",
 }
 
+class Event():
+    def __init__(self, triggers: str | list, criteria: Callable, callback: Callable):
+        self.triggers = triggers if isinstance(triggers, list) else [triggers]
+        self.criteria = criteria
+        self.callback = callback
+
+
 class EventMapper():
     def __init__(self):
         self.gamepad = None
         self.input_roster = {}
+        self.events = []
         for item in KEY_VALUE_TO_NAME.values():
             self.input_roster[item] = 0
         for item in BUTTON_VALUE_TO_NAME.values():
             self.input_roster[item] = 0
-        
+
+    def register_event(self, event: Event):
+        self.events.append(event)
+
+    def check_events(self):
+        for trigger, frames in self.input_roster.items():
+            for event in self.events:
+                if trigger not in event.triggers:
+                    continue
+                if event.criteria(frames):
+                    event.callback(frames)
+
 
     def controllercheck(self):
         if ctrl.get_count() > 0 and self.gamepad is None:
@@ -47,52 +67,53 @@ class EventMapper():
         elif ctrl.get_count() == 0:
             self.gamepad = None
 
-    def tick(self):
+    def tick(self, events):
+        self.controllercheck()
+        self.process_events(events)
+        self.check_events()
         for item in self.input_roster:
+
+            if self.input_roster[item] == 0:    # never pressed
+                continue
             if self.input_roster[item] > 0:     # positive / pressed
                 self.input_roster[item] += 1
             elif self.input_roster[item] < 0:   # negative / unpressed after first press
                 self.input_roster[item] -= 1
-            else:                               # 0 / never pressed
-                continue
 
     def process_events(self, events):
-        self.tick()
-        self.controllercheck()
         for event in events:
             event_type = event.type
-            if event_type in EVENT_TYPES_LISTENING.keys():
-                target = EVENT_TYPES_LISTENING[event.type]
-                value = getattr(event, target, None)
-                
-                if target == "key":
-                    name = KEY_VALUE_TO_NAME.get(value, "unknown")
-                elif target == "button":
-                    name = BUTTON_VALUE_TO_NAME.get(value, "unknown")
-                else:
-                    name = "unknown"
 
-                updown = -1 if event_type in [pygame.KEYUP, pygame.CONTROLLERBUTTONUP] else 1
-                print(f"{name} ({value}) set to {updown}")
-                
-                self.input_roster[name] = updown
+            if not event_type in EVENT_TYPES_LISTENING.keys():
+                continue
+
+            target = EVENT_TYPES_LISTENING[event.type]
+
+            value = getattr(event, target, None)
+            
+            if target == "key":
+                name = KEY_VALUE_TO_NAME.get(value, "unknown")
+            elif target == "button":
+                name = BUTTON_VALUE_TO_NAME.get(value, "unknown")
             else:
-                if event.type not in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
-                    pass
-                    #events_combined.append(f"ignored event {event}")
+                name = "unknown"
+
+            updown = -1 if event_type in [pygame.KEYUP, pygame.CONTROLLERBUTTONUP] else 1
+            
+            self.input_roster[name] = updown
         
 
 
-if __name__ == "__main__":
+def controllertest():
     ctrl.init()
-    from engine.helper.textwindow import TextWindow
+    from engine.debug.textwindow import TextWindow
 
     tw = TextWindow(width=60, height=25)
     em = EventMapper()
 
     while tw.running:
         tw.tick()
-        em.process_events(tw.events)
+        em.tick(tw.events)
         tw.blank()
         
         tw.write(2, 1, f"CONTROLLER BUTTON TEST")
@@ -103,20 +124,24 @@ if __name__ == "__main__":
         y += 1
         
         for name, value in em.input_roster.items():
-            if name.startswith("CONTROLLER_BUTTON_"):
-                button_name = name.replace("CONTROLLER_BUTTON_", "")
-                tw.write(3, y, button_name)
-                
-                if value > 0:
-                    tw.write(20, y, "[PRESSED]")
-                    tw.write(40, y, f"{str(abs(value))} frames")
-                elif value < 0:
-                    tw.write(20, y, "[released]")
-                    tw.write(40, y, f"{str(abs(value))} frames")
-                else:
-                    tw.write(20, y, "[neutral]")
-                    tw.write(40, y, "0")
-                
-                y += 1
+            if not name.startswith("CONTROLLER_BUTTON_"):
+                continue
+            button_name = name.replace("CONTROLLER_BUTTON_", "")
+            tw.write(3, y, button_name)
+            
+            if value > 0:
+                tw.write(20, y, "[PRESSED]")
+                tw.write(40, y, f"{str(abs(value))} frames")
+            elif value < 0:
+                tw.write(20, y, "[released]")
+                tw.write(40, y, f"{str(abs(value))} frames")
+            else:
+                tw.write(20, y, "[neutral]")
+                tw.write(40, y, "0")
+            
+            y += 1
         tw.clock.tick(120)
+
+if __name__ == "__main__":
+    controllertest()
 
