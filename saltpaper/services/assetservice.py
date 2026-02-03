@@ -3,10 +3,6 @@ import os
 from pathlib import Path
 
 cwd = Path.cwd()
-engine_assets = cwd / "saltpaper" / "assets"
-game_assets = cwd / "game" / "assets"
-
-
 filetypes = {
     "image": [".png", ".jpg", ".bmp", ".gif"],
     "music": [".wav", ".ogg", ".mp3"],
@@ -18,7 +14,11 @@ filetypes = {
 class AssetService():
     def __init__(self):
         self.cache = {}
-        self.roots = [game_assets, engine_assets]
+        self.roots = []
+
+    def set_assets_folder(self, path):
+        path = Path(path)
+        self.roots.append(path)
 
     def get_asset(self, id):
         asset = self.cache.get(id)
