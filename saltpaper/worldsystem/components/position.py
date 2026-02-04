@@ -2,20 +2,22 @@ class Position():
     def __init__(
             self,
             layer:int=0,
-            x:int=0,
-            y:int=0,
+            position:tuple[int,int]=(0,0),
             height:int=0,
             width:int=0
     ):
         self.layer = layer
-        self.x = x
-        self.y = y
+        self.position = position
         self.height = height
         self.width = width
 
     @property
-    def position(self):
-        return (self.x, self.y)
+    def x(self):
+        return self.position[0]
+    
+    @property
+    def y(self):
+        return self.position[1]
 
     def set_layer(self, layer):
         self.layer = layer

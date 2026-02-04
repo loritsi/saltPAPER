@@ -13,6 +13,7 @@ if __name__ == "__main__":
 import pygame
 import pygame.locals as pl
 import pygame._sdl2.controller as ctrl
+import pygame._sdl2.video as sdl_video
 
 KEY_VALUE_TO_NAME = {
     value: name
@@ -76,11 +77,21 @@ class Criteria():
         return on_held_interval
 
 class Event():
-    def __init__(self, triggers: str | list, criteria: Callable, callback: Callable, args: list = None):
+    def __init__(
+            self,
+            triggers: str | list,
+            criteria: Callable,
+            callback: Callable,
+            args: list = None,
+            priority: int = 0,
+            eat_trigger: bool = False
+    ):
         self.triggers = triggers if isinstance(triggers, list) else [triggers]
         self.criteria = criteria
         self.callback = callback
         self.args = args if args else []
+        self.priority = priority
+        self.eat_trigger = eat_trigger
 
 
 class InputService():

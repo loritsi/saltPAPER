@@ -12,9 +12,11 @@ filetypes = {
 }
 
 class AssetService():
-    def __init__(self):
+    def __init__(self, assets_folder_path):
         self.cache = {}
         self.roots = []
+
+        self.set_assets_folder(assets_folder_path)
 
     def set_assets_folder(self, path):
         path = Path(path)
@@ -40,6 +42,9 @@ class AssetService():
                     asset = self._load_asset(kind, path)
                     self.cache[id] = asset
                     return asset
+
+        if id == "image_missing":
+            raise FileNotFoundError(f"No /image/missing.png is set")
 
         print(
             f"asset not found: '{id}' (type='{kind}', name='{name}'). "
