@@ -47,7 +47,10 @@ class AssetService():
             f"ensure the asset exists in 'game/assets' or 'engine/assets' and that the id is formatted as '<type>_<name>'."
         )
 
-        return self.get_asset("image_missing")
+        try:
+            return self.get_asset("image_missing")
+        except FileNotFoundError:
+            raise FileNotFoundError(f"No /image/missing.png is set")
 
     def _load_asset(self, kind, path: Path):
         if kind == "image":

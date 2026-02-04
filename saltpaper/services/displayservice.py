@@ -2,24 +2,28 @@ import pygame
 import sys
 from statistics import mean
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from saltpaper import InputService
 
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 class DisplayService():
+
     def __init__(
             self,
             dimensions,
             inputservice,
             target_frame_rate:int=120,
-            func=None,
             caption="saltpaper engine display",
-            vsync=True # for testing
+            vsync=True, # for testing
+            iconpath=None
     ):
         self.dimensions = dimensions
-        self.func = func
         self.caption = caption
-        self.eventmapper = inputservice
+        self.inputservice:'InputService' = inputservice
         self.target_frame_rate = target_frame_rate
 
         self.layers = []
@@ -28,7 +32,9 @@ class DisplayService():
 
         pygame.init()
 
-
+        self.funcs = []
+        iconsurf = pygame.image.load(iconpath)
+        pygame.display.set_icon(iconsurf)
         self.display = pygame.display.set_mode(dimensions, vsync=vsync)
 
         pygame.display.set_caption(caption)
@@ -40,7 +46,8 @@ class DisplayService():
         self.dirty = True
 
     def mount(self, func=None):
-        self.func = func
+        if not func: return
+        self.funcs.append(func)
 
     def refresh_sorting(self):
         self.layers_by_tick = sorted(self.layers, key=lambda l: l.tick_priority)
@@ -49,6 +56,10 @@ class DisplayService():
     def add_layer(self, layer):
         self.layers.append(layer)
         self.refresh_sorting()
+
+    def add_many_layers(self, layers):
+        self.layers.extend(layers)
+        self.refresh_sorting
 
     def remove_layer(self, layer):
         for i, item in enumerate(self.layers):
@@ -66,14 +77,14 @@ class DisplayService():
             raise ValueError("the display service has no layers to display. make sure they are added with displayservice.add_layer(layer)")
 
         self.events = pygame.event.get()
-        self.eventmapper.tick(self.events)
+        self.inputservice.tick(self.events)
         for event in self.events:
             if event.type == pygame.QUIT:
                 self.running = False
 
         for layer in self.layers_by_tick:
             if layer.ticking:
-                layer.tick()
+                layer.tick(self.delta)
 
         for layer in self.layers_by_render:
             if not layer.visible:
@@ -82,8 +93,8 @@ class DisplayService():
             offset = layer.offset
             self.display.blit(surf, offset)
             
-        if self.func:
-            self.func(self)
+        for func in self.funcs:
+            func(self, self.delta)
 
         pygame.display.flip() 
         delta_entry = self.clock.tick(self.target_frame_rate) / 1000
@@ -91,46 +102,3 @@ class DisplayService():
         if len(self.deltas) > 10:
             self.deltas.pop(0)
         self.delta = mean(self.deltas)
-if __name__ == "__main__":
-    from pathlib import Path
-    from saltpaper.services.layer import Layer
-    from saltpaper.map.tilemap import TileMap
-    from saltpaper.services.inputservice import InputService
-
-    cwd = Path.cwd()
-    duck_image_path = cwd / "engine" / "assets" / "images" / "duck.jpg"
-    duck_image = pygame.image.load(duck_image_path)
-    test_image_path = cwd / "engine" / "assets" / "images" / "test.png"
-    dimensions = duck_image.get_size()
-    eventmapper = InputService()
-    display = DisplayService(
-        dimensions=dimensions,
-        eventmapper=eventmapper,
-        vsync=False,
-        target_frame_rate=120,
-    )
-
-    tilemap = TileMap(test_image_path, 16)
-
-
-    layer1 = Layer(
-        dimensions=dimensions,
-        surface=duck_image.copy(),
-        opacity_percent=50
-    )
-
-    layer2 = Layer(
-        dimensions=dimensions,
-        surface=duck_image.copy(),
-        opacity_percent=50
-    )
-
-    display.add_layer(layer1)
-    display.add_layer(layer2)
-
-    while display.running:
-        layer1.loopscroll(50,0, display.delta)
-        layer2.loopscroll(0,50, display.delta)
-        display.tick()
-        pygame.display.set_caption(f"{display.caption} - {display.clock.get_fps():.0f}fps (limit {display.target_frame_rate}) - delta {display.delta:.2f})")
-    

@@ -1,0 +1,28 @@
+import math
+
+class VectorTools:
+    """I HATE MATHEMATICS"""
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def distance_between(a:tuple[float, float], b:tuple[float, float]) -> float:
+        ax, ay = a
+        bx, by = b
+
+        xdiff = bx - ax
+        ydiff = by - ay
+
+        return math.sqrt((xdiff**2 + ydiff**2))
+        # i was worried that this would crash if given a negative number
+        # but both components are exponentiated so it can never be negative
+
+    @staticmethod
+    def lerp(a: tuple[float, float], b: tuple[float, float], progress: float = 0.5) -> tuple[float, float]:
+        ax, ay = a
+        bx, by = b
+
+        return (
+            ax + (bx - ax) * progress,
+            ay + (by - ay) * progress
+        )

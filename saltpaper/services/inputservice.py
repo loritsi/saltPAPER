@@ -76,11 +76,11 @@ class Criteria():
         return on_held_interval
 
 class Event():
-    def __init__(self, triggers: str | list, criteria: Callable, callback: Callable, args: list):
+    def __init__(self, triggers: str | list, criteria: Callable, callback: Callable, args: list = None):
         self.triggers = triggers if isinstance(triggers, list) else [triggers]
         self.criteria = criteria
         self.callback = callback
-        self.args = args
+        self.args = args if args else []
 
 
 class InputService():
@@ -98,6 +98,11 @@ class InputService():
             self.input_roster[item] = 0
         for item in MOUSE_VALUE_TO_NAME.values():
             self.input_roster[item] = 0
+
+    @property
+    def mouse_pos(self):
+        return pygame.mouse.get_pos()
+
 
     def register_event(self, event: Event):
         self.events.append(event)
@@ -147,7 +152,7 @@ class InputService():
             if not event_type in EVENT_TYPES_LISTENING.keys():
                 continue
             target = EVENT_TYPES_LISTENING[event.type]
-            value = getattr(event, target, None)
+            value = event.button if target == "mouse" else getattr(event, target, None)
             if target == "key":
                 name = KEY_VALUE_TO_NAME.get(value, "unknown")
             elif target == "button":
@@ -159,46 +164,3 @@ class InputService():
             updown = -1 if event_type in [pygame.KEYUP, pygame.CONTROLLERBUTTONUP, pygame.MOUSEBUTTONUP] else 1
             self.input_roster[name] = updown
         
-
-
-def controllertest():
-    ctrl.init()
-    from saltpaper.debug.textwindow import TextWindow
-
-    tw = TextWindow(width=60, height=25)
-    em = InputService()
-
-    while tw.running:
-        tw.tick()
-        em.tick(tw.events)
-        tw.blank()
-        
-        tw.write(2, 1, f"CONTROLLER BUTTON TEST")
-        tw.write(2, 2, f"FPS: {tw.clock.get_fps():.2f}")
-        
-        y = 4
-        tw.write(2, y, "CONTROLLER BUTTONS:")
-        y += 1
-        
-        for name, value in em.input_roster.items():
-            if not name.startswith("CONTROLLER_BUTTON_"):
-                continue
-            button_name = name.replace("CONTROLLER_BUTTON_", "")
-            tw.write(3, y, button_name)
-            
-            if value > 0:
-                tw.write(20, y, "[PRESSED]")
-                tw.write(40, y, f"{str(abs(value))} frames")
-            elif value < 0:
-                tw.write(20, y, "[released]")
-                tw.write(40, y, f"{str(abs(value))} frames")
-            else:
-                tw.write(20, y, "[neutral]")
-                tw.write(40, y, "0")
-            
-            y += 1
-        tw.clock.tick(120)
-
-if __name__ == "__main__":
-    controllertest()
-

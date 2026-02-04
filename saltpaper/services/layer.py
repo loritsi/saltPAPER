@@ -9,7 +9,6 @@ class Layer:
             tick_priority=0,
             opacity_percent=100,
             surface=None,
-            func=None,
     ):
         self.dimensions = dimensions
         self.surface = surface if surface else pygame.Surface(dimensions, pygame.HWSURFACE | pygame.SRCALPHA)
@@ -17,17 +16,24 @@ class Layer:
         self.ticking = True
         self.opacity_percent = opacity_percent
         self.offset = (0,0)
-        self.func = func
+        
         self.render_priority = render_priority
         self.tick_priority = tick_priority
         
+        self.funcs = []
+
         # loopscroll()
         self._loopscroll_accum_x = 0.0
         self._loopscroll_accum_y = 0.0
 
-    def tick(self):
-        if self.func:
-            self.func(self)
+    def mount(self, func=None):
+        """mount a function to be called when this layer ticks. gives the layer and delta as arguments (i.e. `main(layer, delta)`)"""
+        if not func: return
+        self.funcs.append(func)
+
+    def tick(self, delta):
+        for func in self.funcs:
+            func(self, delta)
     
     def render(self):
         if self.opacity_percent >= 100:
