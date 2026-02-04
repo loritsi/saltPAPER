@@ -57,9 +57,9 @@ class DisplayService():
         self.layers.append(layer)
         self.refresh_sorting()
 
-    def add_many_layers(self, layers):
+    def add_many_layers(self, layers:list):
         self.layers.extend(layers)
-        self.refresh_sorting
+        self.refresh_sorting()
 
     def remove_layer(self, layer):
         for i, item in enumerate(self.layers):

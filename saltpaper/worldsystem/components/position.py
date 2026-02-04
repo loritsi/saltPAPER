@@ -23,3 +23,6 @@ class Position():
     def move(self, dx, dy):
         self.x += dx
         self.y += dy
+
+    def is_point_inside(self, point):
+        x, y  = point

@@ -4,18 +4,19 @@ import numpy as np
 class Layer:
     def __init__(
             self,
-            dimensions,
-            render_priority=0,
-            tick_priority=0,
-            opacity_percent=100,
-            surface=None,
+            dimensions:tuple[int,int],
+            render_priority:int=0,
+            tick_priority:int=0,
+            opacity_percent:int=100,
+            surface:pygame.Surface=None,
+            offset:tuple[int,int]=(0,0)
     ):
         self.dimensions = dimensions
         self.surface = surface if surface else pygame.Surface(dimensions, pygame.HWSURFACE | pygame.SRCALPHA)
         self.visible = True
         self.ticking = True
         self.opacity_percent = opacity_percent
-        self.offset = (0,0)
+        self.offset:tuple[int,int] = offset
         
         self.render_priority = render_priority
         self.tick_priority = tick_priority
@@ -42,6 +43,11 @@ class Layer:
         surf = self.surface.copy()
         surf.set_alpha(int(self.opacity_percent * 2.55))
         return surf
+    
+    def relative_coords(self, coords):
+        x, y = coords
+        newcoords = (x - self.offset[0], y - self.offset[1])
+        return newcoords
     
 
     def loopscroll(self, dx, dy, dt=1.0):
