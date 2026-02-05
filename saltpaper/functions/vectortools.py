@@ -26,3 +26,9 @@ class VectorTools:
             ax + (bx - ax) * progress,
             ay + (by - ay) * progress
         )
+    
+    @staticmethod
+    def is_point_inside(point:tuple[int,int], x:int, y:int, width:int, height:int) -> bool:
+        px, py = point
+        return (x <= px < x + width) and (y <= py < y + height)
+        

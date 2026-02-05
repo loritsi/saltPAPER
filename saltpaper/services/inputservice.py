@@ -1,19 +1,11 @@
-
-# input mapping service
-# initialises with a mapping dict of
-# key trigger -> "event" (arbitrary string)
-# i.e. K_up
 import sys
 from pathlib import Path
 from typing import Callable
-
-if __name__ == "__main__":
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 import pygame
 import pygame.locals as pl
 import pygame._sdl2.controller as ctrl
-import pygame._sdl2.video as sdl_video
+
+from saltpaper.services.event import Event
 
 KEY_VALUE_TO_NAME = {
     value: name
@@ -56,43 +48,6 @@ if __name__ == "__main__":
         f.write("=== KEY EVENTS ===\n")
         for item in MOUSE_VALUE_TO_NAME.values():
             f.write(f"{item}\n")
-
-class Criteria():
-    @staticmethod
-    def on_press(f):
-        return True if f==1 else False
-    
-    @staticmethod
-    def on_held(f):
-        return True if f>0 else False
-    
-    @staticmethod
-    def on_release(f):
-        return True if f==-1 else False
-    
-    @staticmethod
-    def make_on_held_interval(x):
-        def on_held_interval(f):
-            return True if f % x == 0 else False
-        return on_held_interval
-
-class Event():
-    def __init__(
-            self,
-            triggers: str | list,
-            criteria: Callable,
-            callback: Callable,
-            args: list = None,
-            priority: int = 0,
-            eat_trigger: bool = False
-    ):
-        self.triggers = triggers if isinstance(triggers, list) else [triggers]
-        self.criteria = criteria
-        self.callback = callback
-        self.args = args if args else []
-        self.priority = priority
-        self.eat_trigger = eat_trigger
-
 
 class InputService():
     def __init__(self):

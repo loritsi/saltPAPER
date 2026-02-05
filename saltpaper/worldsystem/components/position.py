@@ -3,13 +3,13 @@ class Position():
             self,
             layer:int=0,
             position:tuple[int,int]=(0,0),
+            width:int=0,
             height:int=0,
-            width:int=0
     ):
         self.layer = layer
         self.position = position
-        self.height = height
         self.width = width
+        self.height = height
 
     @property
     def x(self):
