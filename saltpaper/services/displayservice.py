@@ -33,8 +33,9 @@ class DisplayService():
         pygame.init()
 
         self.funcs = []
-        iconsurf = pygame.image.load(iconpath)
-        pygame.display.set_icon(iconsurf)
+        if iconpath is not None:
+            iconsurf = pygame.image.load(iconpath)
+            pygame.display.set_icon(iconsurf)
         self.display = pygame.display.set_mode(dimensions, vsync=vsync)
 
         pygame.display.set_caption(caption)

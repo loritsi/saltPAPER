@@ -4,11 +4,10 @@ from pathlib import Path
 
 cwd = Path.cwd()
 filetypes = {
-    "image": [".png", ".jpg", ".bmp", ".gif"],
-    "music": [".wav", ".ogg", ".mp3"],
-    "sound": [".wav", ".ogg", ".mp3"],
-    "tilesheet": [".tls"], # todo
-    "room": [".room"] #todo
+    "image":    [".png", ".jpg", ".bmp", ".gif"],
+    "anim":     [".png", ".jpg", ".bmp", ".gif"],
+    "music":    [".wav", ".ogg", ".mp3"],
+    "sound":    [".wav", ".ogg", ".mp3"],
 }
 
 class AssetService():
@@ -22,12 +21,19 @@ class AssetService():
         path = Path(path)
         self.roots.append(path)
 
-    def get_asset(self, id):
+    def get_kind(self, asset_id):
+        kind, name = id.split("_", 1)
+        return kind
+
+    def get_asset(self, id, frame=0):
         asset = self.cache.get(id)
-        if asset is not None:
-            return asset
 
         kind, name = id.split("_", 1)
+
+
+        if asset is not None:
+            return asset if kind is not "anim" else asset[frame]
+        
         extensions = filetypes.get(kind)
 
         if extensions is None:
@@ -36,12 +42,26 @@ class AssetService():
         searched = []
         for root in self.roots:
             for ext in extensions:
-                path = root / kind / f"{name}{ext}"
-                searched.append(str(path))
-                if path.exists():
-                    asset = self._load_asset(kind, path)
-                    self.cache[id] = asset
-                    return asset
+                if kind == "anim":
+                    i = 0
+                    self.cache[id] = []
+                    while i >= 0:
+                        path = root / kind / name / f"{name}_{i}{ext}"
+                        searched.append(str(path))
+                        if path.exists():
+                            asset = self._load_asset(kind, path)
+                            self.cache[id].append(asset)
+                        else:
+                            i = -1
+                    if len(self.cache[id] <= 1): raise ValueError("animated asset must have more than one frame")
+                    return self.cache[id][frame]
+                else:
+                    path = root / kind / f"{name}{ext}"
+                    searched.append(str(path))
+                    if path.exists():
+                        asset = self._load_asset(kind, path)
+                        self.cache[id] = asset
+                        return asset
 
         if id == "image_missing":
             raise FileNotFoundError(f"No /image/missing.png is set")
