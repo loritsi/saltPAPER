@@ -27,6 +27,7 @@ class RenderService():
 
     def _render_renderables(self, renderables):
         for renderable in renderables:
+            if not renderable.visible: continue
             self.render(renderable.layer, renderable.position, renderable.asset_id)
 
     def tick(self):

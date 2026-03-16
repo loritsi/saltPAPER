@@ -91,6 +91,8 @@ class DisplayService():
         for event in self.events:
             if event.type == pygame.QUIT:
                 self.running = False
+                pygame.quit()
+                return self.delta
 
         for layer in self.layers_by_tick:
             if layer.ticking:
