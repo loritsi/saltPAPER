@@ -1,6 +1,6 @@
 # saltPAPER
 
-a game engine built on pygame-ce
+a framework built on top of pygame-ce to make development easier for my own purposes
 
 ## requirements
 
