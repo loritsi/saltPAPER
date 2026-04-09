@@ -4,5 +4,3 @@ profile.txt
 *.DS_Store
 /saltpaper.egg-info
 /dist
-saltpaper(2).zip
-/.venv
